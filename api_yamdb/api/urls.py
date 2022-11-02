@@ -17,11 +17,9 @@ router.register(
     api.views.CommentsViewSet
 )
 
-
-
 urlpatterns = [
     path('v1/', include(router.urls)),
     path('admin/', admin.site.urls),
-    #path('auth/, ),
-    #path('users/'),    
+    # path('auth/, ),
+    # path('users/'),
 ]
