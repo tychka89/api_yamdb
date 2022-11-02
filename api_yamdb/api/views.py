@@ -17,6 +17,5 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     pass
 
 
-
 class CommentsViewSet(viewsets.ModelViewSet):
     pass
