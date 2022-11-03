@@ -1,6 +1,10 @@
 from rest_framework import viewsets
 
 
+class UsersViewSet(viewsets.ModelViewSet):
+    pass
+
+
 class CategoriesViewSet(viewsets.ModelViewSet):
     pass
 
