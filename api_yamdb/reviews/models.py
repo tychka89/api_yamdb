@@ -12,10 +12,10 @@ CHOICES = [
 class User(AbstractUser):
     username = models.CharField(max_length=150, unique=True,)
     email = models.EmailField(max_length=254, unique=True,)
-    first_name = models.CharField(max_length=150,)
-    last_name = models.CharField(max_length=150,)
-    bio = models.TextField(verbose_name='Биография', blank=True,)
     role = models.CharField(max_length=150, choices=CHOICES, default='user',)
+    bio = models.TextField(verbose_name='Биография', blank=True,)
+    first_name = models.CharField(max_length=150, blank=True,)
+    last_name = models.CharField(max_length=150, blank=True,)
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -57,14 +57,14 @@ class Title(models.Model):
         blank=True,
         null=True,
     )
-    genre = models.ForeignKey(
+    genre = models.ManyToManyField(
         Genre,
         blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        related_name='titles',
+        # null=True,
+        # on_delete=models.SET_NULL,
+        related_name='titles_genre',
     )
-    category = models.OneToOneField(
+    category = models.ForeignKey(
         Category,
         blank=True,
         null=True,
@@ -81,8 +81,29 @@ class Title(models.Model):
         return self.name
 
 
+class GenreTitle(models.Model):
+    title_id = models.ForeignKey(
+        Title,
+        on_delete=models.CASCADE,
+        related_name='genres'
+    )
+    genre_id = models.ForeignKey(
+        Genre,
+        on_delete=models.CASCADE,
+        related_name='titles'
+    )
+
+    def __str__(self):
+        return str(self.id)
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = 'Произведение - Жанр'
+        verbose_name_plural = 'Произведение - Жанр'
+
+
 class Review(models.Model):
-    title = models.ForeignKey(
+    title_id = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         related_name='reviews',
@@ -97,7 +118,7 @@ class Review(models.Model):
     pub_date = models.DateTimeField(auto_now_add=True,)
 
     class Meta:
-        unique_together = ('title', 'author',)
+        unique_together = ('title_id', 'author',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
