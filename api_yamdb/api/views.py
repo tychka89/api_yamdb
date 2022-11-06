@@ -7,12 +7,14 @@ import reviews.models as models
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from django_filters.rest_framework import DjangoFilterBackend
+
 
 class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
-    permission_classes =(ap.IsAdmin,)
+    permission_classes = (ap.IsAdmin,)
 
     @action(
         methods=[
@@ -53,7 +55,7 @@ class GenresViewSet(viewsets.ModelViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all()
     serializer_class = serializers.TitleSerializer
-    permission_classes = (ap.AdminPermission,)
+    permission_classes = (ap.IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('category', 'genre')
 
@@ -78,7 +80,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
     permission_classes = (ap.AuthorAdminModeratorOrReadOnly,)
-    
+
     def perform_create(self, serializer):
         review_id = get_object_or_404(
             models.Review, id=self.kwargs['review_id']
