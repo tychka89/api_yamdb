@@ -15,24 +15,24 @@ class UsersViewSet(viewsets.ModelViewSet):
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = models.Category.objects.all()
     serializer_class = serializers.CategorySerializer
+    permission_classes = (ap.AdminPermission,)
 
 
 class GenresViewSet(viewsets.ModelViewSet):
     queryset = models.Genre.objects.all()
     serializer_class = serializers.GenresSerializer
+    permission_classes = (ap.AdminPermission,)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all()
     serializer_class = serializers.TitleSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (ap.AdminPermission,)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
-    permission_classes = (
-        ap.AuthorPermission, permissions.IsAuthenticatedOrReadOnly,
-    )
+    permission_classes = (ap.AuthorPermission, permissions.IsAuthenticatedOrReadOnly,)
 
     def perform_create(self, serializer):
         title_id=get_object_or_404(models.Title, id=self.kwargs['title_id'])
@@ -49,12 +49,12 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
-    permission_classes = (
-        ap.AuthorPermission, permissions.IsAuthenticatedOrReadOnly,
-    )
+    permission_classes = (ap.AuthorPermission, permissions.IsAuthenticatedOrReadOnly,)
     
     def perform_create(self, serializer):
-        review_id=get_object_or_404(models.Review, id=self.kwargs['review_id'])
+        review_id=get_object_or_404(
+            models.Review, id=self.kwargs['review_id']
+        )
         serializer.save(
             author=self.request.user,
             review_id=review_id

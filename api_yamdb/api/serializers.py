@@ -2,6 +2,7 @@ from audioop import avg
 from rest_framework import serializers
 from reviews.models import User, Category, Genre, Title, Review, Comment
 from rest_framework.exceptions import ValidationError
+from django.db.models import Avg
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -28,7 +29,7 @@ class GenresSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    #rating = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
     category = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name'
@@ -45,8 +46,10 @@ class TitleSerializer(serializers.ModelSerializer):
             'genre', 'description', 'rating'
         )
     
-    '''def get_rating (self, obj):
-        return Title.objects.aggregate(avg('score')) #поправить'''
+    def get_rating (self, obj):
+        rate_title = Review.objects.filter(id=obj.id)
+        num = rate_title.aggregate(Avg('score'))['score__avg']
+        return num
 
 
 class ReviewSerializer(serializers.ModelSerializer):
