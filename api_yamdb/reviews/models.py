@@ -63,7 +63,8 @@ class Title(models.Model):
         #through='GenreTitle',
         # null=True,
         # on_delete=models.SET_NULL,
-        related_name='titles_genre',
+        # related_name='titles_genre',
+        through='GenreTitle'
     )
     category = models.ForeignKey(
         Category,
@@ -86,12 +87,12 @@ class GenreTitle(models.Model):
     title_id = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='genres'
+        # related_name='genres'
     )
     genre_id = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        related_name='titles'
+        # related_name='titles'
     )
 
     def __str__(self):
