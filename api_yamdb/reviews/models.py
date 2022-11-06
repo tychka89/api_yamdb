@@ -27,7 +27,7 @@ class User(AbstractUser):
 
 class Category(models.Model):
     name = models.CharField(max_length=256,)
-    slug = models.CharField(max_length=50, unique=True,)
+    slug = models.SlugField(max_length=50, unique=True,)
 
     class Meta:
         verbose_name = 'Категория'
@@ -62,7 +62,8 @@ class Title(models.Model):
         blank=True,
         # null=True,
         # on_delete=models.SET_NULL,
-        related_name='titles_genre',
+        # related_name='titles_genre',
+        through='GenreTitle'
     )
     category = models.ForeignKey(
         Category,
@@ -85,12 +86,12 @@ class GenreTitle(models.Model):
     title_id = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='genres'
+        # related_name='genres'
     )
     genre_id = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        related_name='titles'
+        # related_name='titles'
     )
 
     def __str__(self):
