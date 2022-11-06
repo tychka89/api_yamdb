@@ -14,6 +14,10 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'bio', 'role'
         )
 
+class UserEditSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        read_only_fields = ('role',)
+
 
 class CategorySerializer(serializers.ModelSerializer):
 

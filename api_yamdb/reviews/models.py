@@ -27,7 +27,7 @@ class User(AbstractUser):
 
 class Category(models.Model):
     name = models.CharField(max_length=256,)
-    slug = models.CharField(max_length=50, unique=True,)
+    slug = models.SlugField(max_length=50, unique=True,)
 
     class Meta:
         verbose_name = 'Категория'
@@ -60,6 +60,7 @@ class Title(models.Model):
     genre = models.ManyToManyField(
         Genre,
         blank=True,
+        #through='GenreTitle',
         # null=True,
         # on_delete=models.SET_NULL,
         related_name='titles_genre',
