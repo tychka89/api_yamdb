@@ -1,8 +1,10 @@
-from rest_framework import viewsets
+from rest_framework import permissions, viewsets
 from django.shortcuts import get_object_or_404
 
+import api.permissions as ap
 import api.serializers as serializers
 import reviews.models as models
+
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -23,10 +25,14 @@ class GenresViewSet(viewsets.ModelViewSet):
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all()
     serializer_class = serializers.TitleSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
+    permission_classes = (
+        ap.AuthorPermission, permissions.IsAuthenticatedOrReadOnly,
+    )
 
     def perform_create(self, serializer):
         title_id=get_object_or_404(models.Title, id=self.kwargs['title_id'])
@@ -42,4 +48,19 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    pass
+    serializer_class = serializers.CommentSerializer
+    permission_classes = (
+        ap.AuthorPermission, permissions.IsAuthenticatedOrReadOnly,
+    )
+    
+    def perform_create(self, serializer):
+        review_id=get_object_or_404(models.Review, id=self.kwargs['review_id'])
+        serializer.save(
+            author=self.request.user,
+            review_id=review_id
+        )
+
+    def get_queryset(self):
+        review_id=get_object_or_404(models.Review, id=self.kwargs['review_id'])
+        new_queryset = models.Comment.objects.filter(review_id=review_id)
+        return new_queryset

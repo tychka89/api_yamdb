@@ -12,10 +12,10 @@ router.register(r'categories', api.views.CategoriesViewSet,
 router.register(r'genres', api.views.GenresViewSet, basename='genres')
 router.register(r'titles', api.views.TitlesViewSet, basename='titles')
 router.register(r'titles/(?P<title_id>\d+)/reviews', api.views.ReviewsViewSet,
-                basename='titles')
+                basename='reviews')
 router.register(
     r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
-    api.views.CommentsViewSet, basename='titles')
+    api.views.CommentsViewSet, basename='comments')
 router.register(r'users', api.views.UsersViewSet, basename='users')
 
 urlpatterns = [
