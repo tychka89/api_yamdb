@@ -1,3 +1,4 @@
+from audioop import avg
 from rest_framework import serializers
 from reviews.models import User, Category, Genre, Title, Review, Comment
 
@@ -26,6 +27,7 @@ class GenresSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    #rating = serializers.SerializerMethodField()
     category = serializers.SlugRelatedField(
         read_only=True,
         slug_field='name'
@@ -40,6 +42,9 @@ class TitleSerializer(serializers.ModelSerializer):
             'id', 'name', 'year', 'category',
             'genre', 'description', 'rating'
         )
+    
+    '''def get_rating (self, obj):
+        return Title.objects.aggregate(avg('score')) #поправить'''
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -50,7 +55,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Review
-        fields = ('id', 'title', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'title_id', 'text', 'author', 'score', 'pub_date')
 
 
 class CommentSerializer(serializers.ModelSerializer):
