@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'bio', 'role'
         )
 
+
 class UserEditSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         read_only_fields = ('role',)
@@ -35,7 +36,8 @@ class TitleSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
     category = serializers.SlugRelatedField(
         read_only=True,
-        slug_field='name'
+        slug_field='name',
+        # queryset=Category.objects.all()
     )
     genre = serializers.SlugRelatedField(
         slug_field='name',
@@ -45,10 +47,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Title
-        fields = (
-            'id', 'name', 'year', 'category',
-            'genre', 'description', 'rating'
-        )
+        fields = '__all__'
 
     def get_rating(self, obj):
         rate_title = Review.objects.filter(id=obj.id)
