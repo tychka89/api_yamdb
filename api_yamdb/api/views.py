@@ -4,6 +4,9 @@ from django.shortcuts import get_object_or_404
 import api.permissions as ap
 import api.serializers as serializers
 import reviews.models as models
+
+from django_filters.rest_framework import DjangoFilterBackend
+
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
