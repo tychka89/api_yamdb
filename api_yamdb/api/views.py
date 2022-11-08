@@ -1,17 +1,56 @@
-from rest_framework import permissions, status, viewsets
+from rest_framework import exceptions, permissions, status, viewsets
 from django.shortcuts import get_object_or_404
-
+from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 import api.permissions as ap
 import api.serializers as serializers
 import reviews.models as models
-
+from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db.utils import IntegrityError
 
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
-from django_filters.rest_framework import DjangoFilterBackend
 from api.filters import TitlesFilter
+
+
+@api_view(['POST'])
+def signup(request):
+    serializer = serializers.SignUpSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    try:
+        user, create = models.User.objects.get_or_create(
+            **serializer.validated_data
+        )
+    except IntegrityError:
+        raise exceptions.ValidationError('Неверное имя пользователя или email')
+    confirmation_code = default_token_generator.make_token(user)
+    send_mail(
+        subject='YaMDb регистрация',
+        message=f'Ваш код подтверждения: {confirmation_code}',
+        from_email=DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
+    )
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def get_token(request):
+    serializer = serializers.TokenSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    user = get_object_or_404(
+        models.User,
+        username=serializer.validated_data.get('username')
+    )
+
+    if default_token_generator.check_token(
+        user, serializer.validated_data.get('confirmation_code')
+    ):
+        token = AccessToken.for_user(user)
+        return Response({'token': str(token)}, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -58,11 +97,16 @@ class GenresViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = models.Title.objects.all()
-    serializer_class = serializers.TitleSerializer
+    serializer_class = serializers.TitleGetSerializer
     permission_classes = (ap.IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     # filterset_fields = ('category', 'genre')
     filterset_class = TitlesFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return serializers.TitleGetSerializer
+        return serializers.TitlePostSerializer
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
@@ -70,14 +114,14 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     permission_classes = (ap.AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
-        title_id = get_object_or_404(models.Title, id=self.kwargs['title_id'])
+        title_id = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
         serializer.save(
             author=self.request.user,
             title_id=title_id
         )
 
     def get_queryset(self):
-        title_id = get_object_or_404(models.Title, id=self.kwargs['title_id'])
+        title_id = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
         new_queryset = models.Review.objects.filter(title_id=title_id)
         return new_queryset
 
@@ -88,7 +132,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         review_id = get_object_or_404(
-            models.Review, id=self.kwargs['review_id']
+            models.Review, id=self.kwargs.get('review_id')
         )
         serializer.save(
             author=self.request.user,
@@ -97,6 +141,6 @@ class CommentsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         review_id = get_object_or_404(models.Review,
-                                      id=self.kwargs['review_id'])
+                                      id=self.kwargs.get('review_id'))
         new_queryset = models.Comment.objects.filter(review_id=review_id)
         return new_queryset

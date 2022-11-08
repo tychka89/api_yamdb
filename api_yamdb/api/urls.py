@@ -1,8 +1,8 @@
 import api.views
 from django.contrib import admin
 from django.urls import include, path
+from .views import signup, get_token
 from rest_framework import routers
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 app_name = 'api'
 
@@ -21,7 +21,6 @@ router.register(r'users', api.views.UsersViewSet, basename='users')
 urlpatterns = [
     path('v1/', include(router.urls)),
     path('admin/', admin.site.urls),
-    #path('/v1/auth/signup/', ),    # auth/signup
-    path('v1/auth/token/', TokenObtainPairView.as_view(),
-         name='token_obtain_pair'),
+    path('v1/auth/signup/', signup, name='signup'),
+    path('v1/auth/token/', get_token, name='token_obtain_pair'),
 ]

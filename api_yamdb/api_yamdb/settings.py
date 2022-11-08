@@ -116,6 +116,15 @@ AUTH_USER_MODEL = 'reviews.User'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
+
+# Email setup
+
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+DEFAULT_FROM_EMAIL = 'admin@yamdb.com'
+
 #
 
 REST_FRAMEWORK = {
@@ -123,7 +132,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 5,
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
