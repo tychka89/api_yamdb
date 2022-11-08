@@ -1,4 +1,4 @@
-from rest_framework import exceptions, permissions, status, viewsets
+from rest_framework import exceptions, filters, permissions, status, viewsets
 from django.shortcuts import get_object_or_404
 from django.core.mail import send_mail
 from django.contrib.auth.tokens import default_token_generator
@@ -86,6 +86,8 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CategorySerializer
     permission_classes = (ap.IsAdminOrReadOnly,)
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class GenresViewSet(viewsets.ModelViewSet):
@@ -93,6 +95,8 @@ class GenresViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.GenresSerializer
     permission_classes = (ap.IsAdminOrReadOnly,)
     lookup_field = 'slug'
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('name',)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
