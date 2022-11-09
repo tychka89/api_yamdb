@@ -1,6 +1,8 @@
-import api.permissions as ap
-import api.serializers as serializers
-import reviews.models as models
+from api.permissions import (
+    AuthorAdminModeratorOrReadOnly, IsAdmin, IsAdminOrReadOnly
+)
+import api.serializers as serializers   # подкорректировать
+from reviews.models import Category, Comment, Genre, Review, Title, User
 from api.filters import TitlesFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -21,7 +23,7 @@ def signup(request):
     serializer = serializers.SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
-        user, create = models.User.objects.get_or_create(
+        user, create = User.objects.get_or_create(
             **serializer.validated_data
         )
     except IntegrityError:
@@ -41,7 +43,7 @@ def get_token(request):
     serializer = serializers.TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
-        models.User,
+        User,
         username=serializer.validated_data.get('username')
     )
 
@@ -55,9 +57,9 @@ def get_token(request):
 
 class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
-    queryset = models.User.objects.all()
+    queryset = User.objects.all()
     serializer_class = serializers.UserSerializer
-    permission_classes = (ap.IsAdmin,)
+    permission_classes = (IsAdmin,)
 
     @action(
         methods=[
@@ -82,9 +84,9 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 
 class CategoriesViewSet(viewsets.ModelViewSet):
-    queryset = models.Category.objects.all()
+    queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
-    permission_classes = (ap.IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -97,9 +99,9 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 
 class GenresViewSet(viewsets.ModelViewSet):
-    queryset = models.Genre.objects.all()
+    queryset = Genre.objects.all()
     serializer_class = serializers.GenresSerializer
-    permission_classes = (ap.IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
@@ -112,9 +114,9 @@ class GenresViewSet(viewsets.ModelViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = models.Title.objects.annotate(rating=Avg('review__score'))
+    queryset = Title.objects.annotate(rating=Avg('review__score'))
     serializer_class = serializers.TitleGetSerializer
-    permission_classes = (ap.IsAdminOrReadOnly,)
+    permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
 
@@ -126,28 +128,28 @@ class TitlesViewSet(viewsets.ModelViewSet):
 
 class ReviewsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
-    permission_classes = (ap.AuthorAdminModeratorOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
-        title = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
         serializer.save(
             author=self.request.user,
             title=title
         )
 
     def get_queryset(self):
-        title = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
-        new_queryset = models.Review.objects.filter(title=title)
+        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
+        new_queryset = Review.objects.filter(title=title)
         return new_queryset
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
-    permission_classes = (ap.AuthorAdminModeratorOrReadOnly,)
+    permission_classes = (AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
         review = get_object_or_404(
-            models.Review, id=self.kwargs.get('review_id')
+            Review, id=self.kwargs.get('review_id')
         )
         serializer.save(
             author=self.request.user,
@@ -155,7 +157,7 @@ class CommentsViewSet(viewsets.ModelViewSet):
         )
 
     def get_queryset(self):
-        review = get_object_or_404(models.Review,
+        review = get_object_or_404(Review,
                                       id=self.kwargs.get('review_id'))
-        new_queryset = models.Comment.objects.filter(review=review)
+        new_queryset = Comment.objects.filter(review=review)
         return new_queryset
