@@ -1,6 +1,8 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
+from django.core.exceptions import ValidationError
+from django.shortcuts import get_object_or_404
 
 
 class SignUpSerializer(serializers.HyperlinkedModelSerializer):
@@ -63,11 +65,7 @@ class TitleGetSerializer(serializers.ModelSerializer):
     class Meta:
         model = Title
         fields = '__all__'
-    
-    """def get_rating(self, obj):
-        rate_title = Review.objects.filter(id=obj.id)
-        num = rate_title.aggregate(Avg('score'))['score__avg']
-        return num"""
+
 
 class TitlePostSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
@@ -99,19 +97,17 @@ class ReviewSerializer(serializers.ModelSerializer):
         fields = ('id', 'title_id', 'text', 'author', 'score', 'pub_date')
 
 
-    """def validate(self, data):
+    def validate(self, data):
         request = self.context['request']
-        author = request.user
-        title = data['title']
-        score = data['score']
-        if request.method == 'POST':
-            if Review.objects.filter(title=title,
-                                     author=author).exists():
+        if (request.method not in ('GET', "PATCH")
+            and Review.objects.filter(
+            title=get_object_or_404(
+                Title, pk=self.context.get('view').kwargs.get('title_id')
+            ),
+                author=request.user).exists()):
                 raise ValidationError('На одно произведение пользователь '
-                                      'может оставить только один отзыв')
-            if score <= 0 or score > 10:
-                raise ValidationError('Score должен быть от 1 до 10!')
-        return data"""
+                                      'может оставить только один отзыв')            
+        return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
