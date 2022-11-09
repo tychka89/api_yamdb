@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 
 class SignUpSerializer(serializers.HyperlinkedModelSerializer):
     email = serializers.EmailField(required=True,)
-    
+
     class Meta:
         model = User
         fields = ('username', 'email')
@@ -60,7 +60,7 @@ class GenresSerializer(serializers.ModelSerializer):
 class TitleGetSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
     genre = GenresSerializer(many=True)
-    rating = serializers.IntegerField(default=0)    
+    rating = serializers.IntegerField(default=0)
 
     class Meta:
         model = Title
@@ -70,13 +70,13 @@ class TitleGetSerializer(serializers.ModelSerializer):
 class TitlePostSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug',
-		queryset=Category.objects.all()
+        queryset=Category.objects.all()
     )
     genre = serializers.SlugRelatedField(
         slug_field='slug',
         many=True,
         queryset=Genre.objects.all()
-    ) 
+    )
 
     class Meta:
         model = Title
@@ -96,7 +96,6 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ('id', 'title_id', 'text', 'author', 'score', 'pub_date')
 
-
     def validate(self, data):
         request = self.context['request']
         if (request.method not in ('GET', "PATCH")
@@ -105,8 +104,8 @@ class ReviewSerializer(serializers.ModelSerializer):
                 Title, pk=self.context.get('view').kwargs.get('title_id')
             ),
                 author=request.user).exists()):
-                raise ValidationError('На одно произведение пользователь '
-                                      'может оставить только один отзыв')
+            raise ValidationError('На одно произведение пользователь '
+                                  'может оставить только один отзыв')
         return data
 
 
