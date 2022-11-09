@@ -9,6 +9,7 @@ import reviews.models as models
 from rest_framework_simplejwt.tokens import AccessToken
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.utils import IntegrityError
+from django.db.models import Avg
 
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
@@ -100,7 +101,7 @@ class GenresViewSet(viewsets.ModelViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = models.Title.objects.all()
+    queryset = models.Title.objects.annotate(rating=Avg('review__score'))
     serializer_class = serializers.TitleGetSerializer
     permission_classes = (ap.IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -118,15 +119,15 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     permission_classes = (ap.AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
-        title_id = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
+        title = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
         serializer.save(
             author=self.request.user,
-            title_id=title_id
+            title=title
         )
 
     def get_queryset(self):
-        title_id = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
-        new_queryset = models.Review.objects.filter(title_id=title_id)
+        title = get_object_or_404(models.Title, id=self.kwargs.get('title_id'))
+        new_queryset = models.Review.objects.filter(title=title)
         return new_queryset
 
 
@@ -135,16 +136,16 @@ class CommentsViewSet(viewsets.ModelViewSet):
     permission_classes = (ap.AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
-        review_id = get_object_or_404(
+        review = get_object_or_404(
             models.Review, id=self.kwargs.get('review_id')
         )
         serializer.save(
             author=self.request.user,
-            review_id=review_id
+            review=review
         )
 
     def get_queryset(self):
-        review_id = get_object_or_404(models.Review,
+        review = get_object_or_404(models.Review,
                                       id=self.kwargs.get('review_id'))
-        new_queryset = models.Comment.objects.filter(review_id=review_id)
+        new_queryset = models.Comment.objects.filter(review=review)
         return new_queryset

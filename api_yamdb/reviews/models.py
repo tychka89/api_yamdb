@@ -73,7 +73,6 @@ class Title(models.Model):
         on_delete=models.SET_NULL,
         related_name='titles',
     )
-    rating = models.IntegerField(blank=True, null=True,)
 
     class Meta:
         verbose_name = 'Произведение'
@@ -84,45 +83,48 @@ class Title(models.Model):
 
 
 class GenreTitle(models.Model):
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
         # related_name='genres'
     )
-    genre_id = models.ForeignKey(
+    genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
         # related_name='titles'
     )
 
-    def __str__(self):
-        return str(self.id)
-
     class Meta:
-        ordering = ["id"]
+        #ordering = ["id"]
         verbose_name = 'Произведение - Жанр'
         verbose_name_plural = 'Произведение - Жанр'
 
+    def __str__(self):
+        return f'{self.genre} {self.title}'
+
+    
+
 
 class Review(models.Model):
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name='reviews',
+        #related_name='reviews',
     )
     text = models.TextField()
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='reviews',
+        #related_name='reviews',
     )
     score = models.IntegerField()
     pub_date = models.DateTimeField(auto_now_add=True,)
 
     class Meta:
-        unique_together = ('title_id', 'author',)
+        unique_together = ('title', 'author',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
+        #default_related_name = 'review'
 
     def __str__(self):
         return 'Отзыв "{}" автора "{}" к произведению "{}"'.format(
@@ -130,7 +132,7 @@ class Review(models.Model):
 
 
 class Comment(models.Model):
-    review_id = models.ForeignKey(
+    review = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name='comments'
     )
     text = models.TextField()
@@ -146,4 +148,4 @@ class Comment(models.Model):
 
     def __str__(self):
         return 'Комментарий "{}" автора "{}" к отзыву "{}"'.format(
-            self.id, self.author, self.review_id)
+            self.id, self.author, self.review)
