@@ -1,8 +1,9 @@
 import api.views
 from django.contrib import admin
 from django.urls import include, path
-from .views import signup, get_token
 from rest_framework import routers
+
+from .views import get_token, signup
 
 app_name = 'api'
 
