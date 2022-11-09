@@ -1,20 +1,19 @@
-from rest_framework import exceptions, filters, permissions, status, viewsets
-from django.shortcuts import get_object_or_404
-from django.core.mail import send_mail
-from django.contrib.auth.tokens import default_token_generator
-from api_yamdb.settings import DEFAULT_FROM_EMAIL
 import api.permissions as ap
 import api.serializers as serializers
 import reviews.models as models
-from rest_framework_simplejwt.tokens import AccessToken
-from django_filters.rest_framework import DjangoFilterBackend
-from django.db.utils import IntegrityError
+from api.filters import TitlesFilter
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 from django.db.models import Avg
-
+from django.db.utils import IntegrityError
+from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import exceptions, filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from rest_framework_simplejwt.tokens import AccessToken
 
-from api.filters import TitlesFilter
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
 
 @api_view(['POST'])
@@ -105,7 +104,6 @@ class TitlesViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.TitleGetSerializer
     permission_classes = (ap.IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    # filterset_fields = ('category', 'genre')
     filterset_class = TitlesFilter
 
     def get_serializer_class(self):

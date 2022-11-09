@@ -1,8 +1,7 @@
-from rest_framework import serializers
-from reviews.models import User, Category, Genre, Title, Review, Comment
-from rest_framework.exceptions import ValidationError
-from django.db.models import Avg
 from django.core.validators import MaxValueValidator, MinValueValidator
+from rest_framework import serializers
+from reviews.models import Category, Comment, Genre, Review, Title, User
+
 
 class SignUpSerializer(serializers.HyperlinkedModelSerializer):
     email = serializers.EmailField(required=True,)
