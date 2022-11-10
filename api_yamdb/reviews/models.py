@@ -1,20 +1,32 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-]
+from .validators import year_validate
 
 
 class User(AbstractUser):
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    ROLES = [
+        (USER, 'User'),
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+    ]
     username = models.CharField(max_length=150, unique=True,)
     email = models.EmailField(max_length=254, unique=True,)
-    role = models.CharField(max_length=150, choices=CHOICES, default='user',)
+    role = models.CharField(max_length=150, choices=ROLES, default=USER,)
     bio = models.TextField(verbose_name='Биография', blank=True,)
     first_name = models.CharField(max_length=150, blank=True,)
     last_name = models.CharField(max_length=150, blank=True,)
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
 
     class Meta:
         verbose_name = 'Пользователь'
@@ -50,7 +62,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=100,)
-    year = models.IntegerField()
+    year = models.IntegerField(validators=[year_validate])
     description = models.CharField(
         max_length=500,
         blank=True,

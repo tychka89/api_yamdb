@@ -1,5 +1,4 @@
 import api.views
-from django.contrib import admin
 from django.urls import include, path
 from rest_framework import routers
 
@@ -21,7 +20,6 @@ router.register(r'users', api.views.UsersViewSet, basename='users')
 
 urlpatterns = [
     path('v1/', include(router.urls)),
-    path('admin/', admin.site.urls),
     path('v1/auth/signup/', signup, name='signup'),
     path('v1/auth/token/', get_token, name='token_obtain_pair'),
 ]
