@@ -1,5 +1,9 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.core.validators import RegexValidator
+
+slug_regex_validator = [RegexValidator(regex=r'^[-a-zA-Z0-9_]+$',
+                                       message='Недопустимый символ в slug')]
 
 CHOICES = [
     ('user', 'Пользователь'),
@@ -26,7 +30,8 @@ class User(AbstractUser):
 
 class Category(models.Model):
     name = models.CharField(max_length=256,)
-    slug = models.SlugField(max_length=50, unique=True,)
+    slug = models.SlugField(max_length=50, unique=True,
+                            validators=slug_regex_validator)
 
     class Meta:
         verbose_name = 'Категория'
@@ -38,7 +43,8 @@ class Category(models.Model):
 
 class Genre(models.Model):
     name = models.CharField(max_length=100,)
-    slug = models.SlugField(unique=True,)
+    slug = models.SlugField(unique=True,
+                            validators=slug_regex_validator)
 
     class Meta:
         verbose_name = 'Жанр'
@@ -110,7 +116,7 @@ class Review(models.Model):
     pub_date = models.DateTimeField(auto_now_add=True,)
 
     class Meta:
-        unique_together = ('title_id', 'author_id',)
+        unique_together = ('title', 'author',)
         verbose_name = 'Отзыв'
         verbose_name_plural = 'Отзывы'
 
