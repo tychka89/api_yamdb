@@ -88,6 +88,43 @@ http://127.0.0.1:8000/redoc/
 Удалить произведение:
 /api/v1/titles/{titles_id}/
 ```
+## Примеры запросов
+
+Получение списка всех произведений:
+
+```
+Method: GET
+Endpoint: "api/v1/titles/"
+```
+
+Публикация произведения:
+
+```
+Method: POST
+Endpoint: "/api/v1/titles/"
+Payload:
+{
+  "name": "string",
+  "year": 0,
+  "description": "string",
+  "genre": [
+    "string"
+  ],
+  "category": "string"
+}
+```
+
+Получение JWT-токена:
+
+```
+Method: POST
+Endpoint: "/api/v1/auth/jwt/create/"
+Payload:
+{
+"username": "string",
+"confirmation_code": "string"
+}
+```
 ## Стек технологий: 
 - Python 3.7,
 - Django 2.2.16,
