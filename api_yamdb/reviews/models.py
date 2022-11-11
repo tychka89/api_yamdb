@@ -5,14 +5,16 @@ from django.core.validators import RegexValidator
 slug_regex_validator = [RegexValidator(regex=r'^[-a-zA-Z0-9_]+$',
                                        message='Недопустимый символ в slug')]
 
-CHOICES = [
-    ('user', 'Пользователь'),
-    ('moderator', 'Модератор'),
-    ('admin', 'Администратор'),
-]
-
 
 class User(AbstractUser):
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+    USER = 'user'
+    CHOICES = [
+        (ADMIN, 'Administrator'),
+        (MODERATOR, 'Moderator'),
+        (USER, 'User'),
+    ]
     username = models.CharField(max_length=150, unique=True,)
     email = models.EmailField(max_length=254, unique=True,)
     role = models.CharField(max_length=150, choices=CHOICES, default='user',)
@@ -26,6 +28,14 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
+
+    @property
+    def is_moderator(self):
+        return self.role == self.MODERATOR
+
+    @property
+    def is_admin(self):
+        return self.role == self.ADMIN
 
 
 class Category(models.Model):
