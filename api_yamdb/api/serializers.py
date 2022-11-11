@@ -12,15 +12,16 @@ class SignUpSerializer(serializers.HyperlinkedModelSerializer):
         model = User
         fields = ('username', 'email')
 
-    def validate_username(self, value):
-        if value.lower() == 'me':
+    def validate(self, data):
+        if data['username'] == 'me':
             raise serializers.ValidationError(
-                'Имя пользователя "me"- не доступно'
-            )
-        return value
+                'Имя пользователя "me" не доступно')
+        if User.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError('Такой email уже существует')
+        return data
 
 
-class TokenSerializer(serializers.Serializer):
+class ConfirmationCodeSerializer(serializers.Serializer):
     username = serializers.CharField(required=True,)
     confirmation_code = serializers.CharField(
         max_length=150, required=True,
@@ -50,24 +51,25 @@ class CategorySerializer(serializers.ModelSerializer):
         lookup_field = 'slug'
 
 
-class GenresSerializer(serializers.ModelSerializer):
+class GenreSerializer(serializers.ModelSerializer):
     class Meta:
         model = Genre
         fields = ('name', 'slug')
         lookup_field = 'slug'
 
 
-class TitleGetSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
-    genre = GenresSerializer(many=True)
+    genre = GenreSerializer(many=True)
     rating = serializers.IntegerField(default=0)
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = ('id', 'name', 'year', 'description',
+                  'genre', 'category', 'rating')
 
 
-class TitlePostSerializer(serializers.ModelSerializer):
+class TitleWriteSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug',
         queryset=Category.objects.all()

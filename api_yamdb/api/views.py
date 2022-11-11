@@ -3,7 +3,7 @@ from api.permissions import (
 )
 import api.serializers as serializers   # подкорректировать
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.filters import TitlesFilter
+from api.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -40,7 +40,7 @@ def signup(request):
 
 @api_view(["POST"])
 def get_token(request):
-    serializer = serializers.TokenSerializer(data=request.data)
+    serializer = serializers.ConfirmationCodeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
         User,
@@ -100,7 +100,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 class GenresViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
-    serializer_class = serializers.GenresSerializer
+    serializer_class = serializers.GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -115,15 +115,15 @@ class GenresViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('review__score'))
-    serializer_class = serializers.TitleGetSerializer
+    serializer_class = serializers.TitleReadSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_class = TitlesFilter
+    filterset_class = TitleFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return serializers.TitleGetSerializer
-        return serializers.TitlePostSerializer
+            return serializers.TitleReadSerializer
+        return serializers.TitleWriteSerializer
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
