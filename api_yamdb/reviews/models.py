@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
+from api.validators import year_validate
 
 slug_regex_validator = [RegexValidator(regex=r'^[-a-zA-Z0-9_]+$',
                                        message='Недопустимый символ в slug')]
@@ -66,7 +67,7 @@ class Genre(models.Model):
 
 class Title(models.Model):
     name = models.CharField(max_length=100,)
-    year = models.IntegerField()
+    year = models.IntegerField(validators=[year_validate])
     description = models.CharField(
         max_length=500,
         blank=True,
