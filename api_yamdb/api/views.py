@@ -1,17 +1,23 @@
-from api.permissions import (
-    AuthorAdminModeratorOrReadOnly, IsAdmin, IsAdminOrReadOnly
-)
-import api.serializers as serializers   # подкорректировать
+from api.permissions import (AuthorAdminModeratorOrReadOnly,
+                             IsAdmin, IsAdminOrReadOnly)
+from.serializers import (SignUpSerializer, TokenSerializer,
+                         UserSerializer, UserEditSerializer,
+                         CategorySerializer, GenresSerializer,
+                         TitleGetSerializer, TitlePostSerializer,
+                         ReviewSerializer, CommentSerializer,)
+
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from api.filters import TitlesFilter
+
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
+
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, permissions, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -19,8 +25,9 @@ from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def signup(request):
-    serializer = serializers.SignUpSerializer(data=request.data)
+    serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     try:
         user, create = User.objects.get_or_create(
@@ -39,8 +46,9 @@ def signup(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def get_token(request):
-    serializer = serializers.TokenSerializer(data=request.data)
+    serializer = TokenSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     user = get_object_or_404(
         User,
@@ -58,7 +66,7 @@ def get_token(request):
 class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
     queryset = User.objects.all()
-    serializer_class = serializers.UserSerializer
+    serializer_class = UserSerializer
     permission_classes = (IsAdmin,)
 
     @action(
@@ -69,7 +77,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         detail=False,
         url_path='me',
         permission_classes=[permissions.IsAuthenticated],
-        serializer_class=serializers.UserEditSerializer,
+        serializer_class=UserEditSerializer,
     )
     def users_own_profile(self, request):
         serializer = self.get_serializer(
@@ -85,7 +93,7 @@ class UsersViewSet(viewsets.ModelViewSet):
 
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
-    serializer_class = serializers.CategorySerializer
+    serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -100,7 +108,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 class GenresViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
-    serializer_class = serializers.GenresSerializer
+    serializer_class = GenresSerializer
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
@@ -115,19 +123,19 @@ class GenresViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.annotate(rating=Avg('review__score'))
-    serializer_class = serializers.TitleGetSerializer
+    serializer_class = TitleGetSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitlesFilter
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
-            return serializers.TitleGetSerializer
-        return serializers.TitlePostSerializer
+            return TitleGetSerializer
+        return TitlePostSerializer
 
 
 class ReviewsViewSet(viewsets.ModelViewSet):
-    serializer_class = serializers.ReviewSerializer
+    serializer_class = ReviewSerializer
     permission_classes = (AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
@@ -145,7 +153,7 @@ class ReviewsViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    serializer_class = serializers.CommentSerializer
+    serializer_class = CommentSerializer
     permission_classes = (AuthorAdminModeratorOrReadOnly,)
 
     def perform_create(self, serializer):
