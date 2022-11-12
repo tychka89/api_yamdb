@@ -2,7 +2,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 
 
 class SignUpSerializer(serializers.HyperlinkedModelSerializer):
@@ -102,9 +101,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if (request.method not in ('GET', "PATCH")
             and Review.objects.filter(
-            title=get_object_or_404(
-                Title, pk=self.context.get('view').kwargs.get('title_id')
-            ),
+            title=self.context.get('view').kwargs.get('title_id'),
                 author=request.user).exists()):
             raise ValidationError('На одно произведение пользователь '
                                   'может оставить только один отзыв')
