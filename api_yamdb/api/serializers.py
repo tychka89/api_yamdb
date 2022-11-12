@@ -2,7 +2,6 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from rest_framework import serializers
 from reviews.models import Category, Comment, Genre, Review, Title, User
 from django.core.exceptions import ValidationError
-from django.shortcuts import get_object_or_404
 
 
 class SignUpSerializer(serializers.HyperlinkedModelSerializer):
