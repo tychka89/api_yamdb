@@ -7,6 +7,7 @@ from api.v1.serializers import (SignUpSerializer, ConfirmationCodeSerializer,
                                 TitleReadSerializer, TitleWriteSerializer,
                                 ReviewSerializer, CommentSerializer,)
 from reviews.models import Category, Comment, Genre, Review, Title, User
+from .mixins import CreateDestroyViewSet
 from api.v1.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
@@ -94,7 +95,7 @@ class UsersViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
-class CategoriesViewSet(viewsets.ModelViewSet):
+class CategoriesViewSet(CreateDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (IsAdminOrReadOnly,)
@@ -102,26 +103,14 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
 
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
-class GenresViewSet(viewsets.ModelViewSet):
+class GenresViewSet(CreateDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = (IsAdminOrReadOnly,)
     lookup_field = 'slug'
     filter_backends = (filters.SearchFilter,)
     search_fields = ('name',)
-
-    def retrieve(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
