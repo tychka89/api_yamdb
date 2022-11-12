@@ -19,7 +19,7 @@ class User(AbstractUser):
     ]
     username = models.CharField(max_length=150, unique=True,)
     email = models.EmailField(max_length=254, unique=True,)
-    role = models.CharField(max_length=150, choices=CHOICES, default='user',)
+    role = models.CharField(max_length=150, choices=CHOICES, default=USER,)
     bio = models.TextField(verbose_name='Биография', blank=True,)
     first_name = models.CharField(max_length=150, blank=True,)
     last_name = models.CharField(max_length=150, blank=True,)
