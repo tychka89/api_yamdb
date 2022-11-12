@@ -1,13 +1,13 @@
-from api.permissions import (
+from api.v1.permissions import (
     AuthorAdminModeratorOrReadOnly, IsAdmin, IsAdminOrReadOnly
 )
-from api.serializers import (SignUpSerializer, ConfirmationCodeSerializer,
-                             UserSerializer, UserEditSerializer,
-                             CategorySerializer, GenreSerializer,
-                             TitleReadSerializer, TitleWriteSerializer,
-                             ReviewSerializer, CommentSerializer,)
+from api.v1.serializers import (SignUpSerializer, ConfirmationCodeSerializer,
+                                UserSerializer, UserEditSerializer,
+                                CategorySerializer, GenreSerializer,
+                                TitleReadSerializer, TitleWriteSerializer,
+                                ReviewSerializer, CommentSerializer,)
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.filters import TitleFilter
+from api.v1.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -15,7 +15,7 @@ from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, permissions, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
 
@@ -23,6 +23,7 @@ from api_yamdb.settings import DEFAULT_FROM_EMAIL
 
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -43,6 +44,7 @@ def signup(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def get_token(request):
     serializer = ConfirmationCodeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
