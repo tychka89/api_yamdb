@@ -102,9 +102,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         request = self.context['request']
         if (request.method not in ('GET', "PATCH")
             and Review.objects.filter(
-            title=get_object_or_404(
-                Title, pk=self.context.get('view').kwargs.get('title_id')
-            ),
+            title=self.context.get('view').kwargs.get('title_id'),
                 author=request.user).exists()):
             raise ValidationError('На одно произведение пользователь '
                                   'может оставить только один отзыв')
