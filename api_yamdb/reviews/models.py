@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.core.validators import RegexValidator
-from api.validators import year_validate
+from api.v1.validators import year_validate
 from django.core.validators import MaxValueValidator, MinValueValidator
 
 slug_regex_validator = [RegexValidator(regex=r'^[-a-zA-Z0-9_]+$',

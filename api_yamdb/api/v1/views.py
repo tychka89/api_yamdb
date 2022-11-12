@@ -1,15 +1,14 @@
-from api.permissions import (
+from api.v1.permissions import (
     AuthorAdminModeratorOrReadOnly, IsAdmin, IsAdminOrReadOnly
 )
-from api.serializers import (SignUpSerializer, ConfirmationCodeSerializer,
-                             UserSerializer, UserEditSerializer,
-                             CategorySerializer, GenreSerializer,
-                             TitleReadSerializer, TitleWriteSerializer,
-                             ReviewSerializer, CommentSerializer,)
+from api.v1.serializers import (SignUpSerializer, ConfirmationCodeSerializer,
+                                UserSerializer, UserEditSerializer,
+                                CategorySerializer, GenreSerializer,
+                                TitleReadSerializer, TitleWriteSerializer,
+                                ReviewSerializer, CommentSerializer,)
 from reviews.models import Category, Comment, Genre, Review, Title, User
-from api.filters import TitleFilter
 from .mixins import CreateDestroyViewSet
-
+from api.v1.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
@@ -46,6 +45,7 @@ def signup(request):
 
 
 @api_view(["POST"])
+@permission_classes([permissions.AllowAny])
 def get_token(request):
     serializer = ConfirmationCodeSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
