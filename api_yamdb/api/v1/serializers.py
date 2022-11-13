@@ -17,6 +17,8 @@ class SignUpSerializer(serializers.HyperlinkedModelSerializer):
                 'Имя пользователя "me" не доступно')
         if User.objects.filter(email=data['email']).exists():
             raise serializers.ValidationError('Такой email уже существует')
+        if User.objects.filter(username=data['username']).exists():
+            raise serializers.ValidationError('Имя пользователя уже занято')
         return data
 
 
