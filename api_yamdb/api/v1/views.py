@@ -6,7 +6,7 @@ from api.v1.serializers import (SignUpSerializer, ConfirmationCodeSerializer,
                                 CategorySerializer, GenreSerializer,
                                 TitleReadSerializer, TitleWriteSerializer,
                                 ReviewSerializer, CommentSerializer,)
-from reviews.models import Category, Comment, Genre, Review, Title, User
+from reviews.models import Category, Genre, Review, Title, User
 from .mixins import CreateDestroyViewSet
 from api.v1.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
@@ -15,7 +15,7 @@ from django.db.models import Avg
 from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import exceptions, filters, permissions, status, viewsets
+from rest_framework import filters, permissions, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import AccessToken
@@ -28,12 +28,9 @@ from api_yamdb.settings import DEFAULT_FROM_EMAIL
 def signup(request):
     serializer = SignUpSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    try:
-        user, create = User.objects.get_or_create(
-            **serializer.validated_data
-        )
-    except IntegrityError:
-        raise exceptions.ValidationError('Неверное имя пользователя или email')
+    user, create = User.objects.get_or_create(
+        **serializer.validated_data
+    )
     confirmation_code = default_token_generator.make_token(user)
     send_mail(
         subject='YaMDb регистрация',
@@ -114,7 +111,7 @@ class GenresViewSet(CreateDestroyViewSet):
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
-    queryset = Title.objects.annotate(rating=Avg('review__score'))
+    queryset = Title.objects.annotate(rating=Avg('reviews__score'))
     serializer_class = TitleReadSerializer
     permission_classes = (IsAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
@@ -130,35 +127,31 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
     permission_classes = (AuthorAdminModeratorOrReadOnly,)
 
-    def perform_create(self, serializer):
-        title = get_object_or_404(Title,
-                                  id=self.kwargs.get('title_id'))
+    def get_title(self):
+        return get_object_or_404(Title, id=self.kwargs.get('title_id'))
+
+    def perform_create(self, serializer):        
         serializer.save(
             author=self.request.user,
-            title=title
+            title=self.get_title()
         )
 
-    def get_queryset(self):
-        title = get_object_or_404(Title, id=self.kwargs.get('title_id'))
-        new_queryset = Review.objects.filter(title=title)
-        return new_queryset
+    def get_queryset(self):               
+        return self.get_title().reviews.all()
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
     permission_classes = (AuthorAdminModeratorOrReadOnly,)
 
-    def perform_create(self, serializer):
-        review = get_object_or_404(
-            Review, id=self.kwargs.get('review_id')
-        )
+    def get_comment(self):
+        return get_object_or_404(Review, id=self.kwargs.get('review_id'))
+
+    def perform_create(self, serializer):        
         serializer.save(
             author=self.request.user,
-            review=review
+            review=self.get_comment()
         )
 
-    def get_queryset(self):
-        review = get_object_or_404(Review,
-                                   id=self.kwargs.get('review_id'))
-        new_queryset = Comment.objects.filter(review=review)
-        return new_queryset
+    def get_queryset(self):        
+        return self.get_comment().comments.all()
