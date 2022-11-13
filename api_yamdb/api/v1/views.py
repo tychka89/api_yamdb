@@ -12,7 +12,6 @@ from api.v1.filters import TitleFilter
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
-from django.db.utils import IntegrityError
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions, status, viewsets
@@ -130,13 +129,13 @@ class ReviewsViewSet(viewsets.ModelViewSet):
     def get_title(self):
         return get_object_or_404(Title, id=self.kwargs.get('title_id'))
 
-    def perform_create(self, serializer):        
+    def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
             title=self.get_title()
         )
 
-    def get_queryset(self):               
+    def get_queryset(self):
         return self.get_title().reviews.all()
 
 
@@ -147,11 +146,11 @@ class CommentsViewSet(viewsets.ModelViewSet):
     def get_comment(self):
         return get_object_or_404(Review, id=self.kwargs.get('review_id'))
 
-    def perform_create(self, serializer):        
+    def perform_create(self, serializer):
         serializer.save(
             author=self.request.user,
             review=self.get_comment()
         )
 
-    def get_queryset(self):        
+    def get_queryset(self):
         return self.get_comment().comments.all()
